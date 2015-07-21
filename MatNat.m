@@ -32,12 +32,30 @@ classdef MatNat < handle
         function projectList = getProjectList(obj)
             % Returns a cell array of strings containig the project names
             
-            projectStruct = obj.request('REST/projects', 'format', 'json', 'owner', 'true', 'member', 'true');
-            projectObjList = projectStruct.ResultSet.Result;
-            if isempty(projectObjList)
-                projectList = [];
-            else
-                projectList = {projectObjList.name};
+            structFromServer = obj.request('REST/projects', 'format', 'json', 'owner', 'true', 'member', 'true');
+            projectList = MatNatProject.empty;
+            
+            if ~isempty(structFromServer)                
+                objectList = structFromServer.ResultSet.Result;
+                
+                for object = objectList'
+                    projectList(end + 1) = MatNatProject.createMatNatProjectFromServerObject(object);
+                end
+            end
+        end
+        
+        function sessionList = getSessionList(obj, projectName)
+            % Returns a cell array of strings containig the session names
+            % for the given project
+            
+            structFromServer = obj.request(['REST/projects/' projectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            sessionList = MatNatSession.empty;            
+            
+            if ~isempty(structFromServer)
+                objectList = structFromServer.ResultSet.Result;                
+                for object = objectList'
+                    sessionList(end + 1) = MatNatSession.createMatNatSessionFromServerObject(object);
+                end
             end
         end
     end
@@ -50,14 +68,25 @@ classdef MatNat < handle
                 obj.forceAuthentication;
             end
             options = weboptions('RequestMethod', 'get', 'ContentType','text', 'KeyName', 'Cookie', 'KeyValue', ['JSESSIONID=' obj.sessionCookie], 'MediaType', 'application/json', 'ContentType', 'json');
-            returnValue = webread([obj.authenticatedBaseUrl url], varargin{:}, options);
+            try
+                returnValue = webread([obj.authenticatedBaseUrl url], varargin{:}, options);
+            catch exception
+                if strcmp(exception.identifier, 'MATLAB:webservices:HTTP404StatusCodeError')
+                    returnValue = [];
+                else
+                    rethrow(exception);
+                end
+            end
         end
         
         function forceAuthentication(obj)
             % Forces the server to initiate a new session and issue a new
             % session cookie
             
-            baseUrl = obj.config.getBaseUrl;
+            baseUrl = deblank(obj.config.getBaseUrl);
+            if baseUrl(end) ~= '/'
+                baseUrl = [baseUrl '/'];
+            end
             url = [baseUrl 'data/JSESSION'];
             options = weboptions('Username', obj.config.getUserName, 'Password', obj.config.getPassword);
             obj.sessionCookie = webread(url, options);
