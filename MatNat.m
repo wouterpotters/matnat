@@ -6,7 +6,7 @@ classdef MatNat < handle
     %     Part of MatNat. https://github.com/tomdoel/matnat
     %     Author: Tom Doel, 2015.  www.tomdoel.com
     %     Distributed under the GNU GPL v3 licence. Please see website for details.
-    %        
+    %
     
     properties (Access = private)
         sessionCookie % The JSESSIONID cookie string for this session
@@ -30,39 +30,54 @@ classdef MatNat < handle
         end
         
         function projectList = getProjectList(obj)
-            % Returns a cell array of strings containig the project names
+            % Returns an array of MatNatProjects containing project metadata
             
             structFromServer = obj.request('REST/projects', 'format', 'json', 'owner', 'true', 'member', 'true');
             projectList = MatNatProject.empty;
             
-            if ~isempty(structFromServer)                
+            if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 
                 for object = objectList'
-                    projectList(end + 1) = MatNatProject.createMatNatProjectFromServerObject(object);
+                    projectList(end + 1) = MatNatProject.createFromServerObject(object);
                 end
             end
         end
         
-        function sessionList = getSessionList(obj, projectName)
-            % Returns a cell array of strings containig the session names
-            % for the given project
+        function projectList = getSubjectList(obj, projectName)
+            % Returns an array of MatNatSubjects containing subject metadata
             
-            structFromServer = obj.request(['REST/projects/' projectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
-            sessionList = MatNatSession.empty;            
+            structFromServer = obj.request(['REST/projects/' projectName '/subjects'], 'format', 'json', 'owner', 'true', 'member', 'true', 'columns', 'DEFAULT');
+            projectList = MatNatSubject.empty;
             
             if ~isempty(structFromServer)
-                objectList = structFromServer.ResultSet.Result;                
+                objectList = structFromServer.ResultSet.Result;
+                
                 for object = objectList'
-                    sessionList(end + 1) = MatNatSession.createMatNatSessionFromServerObject(object);
+                    projectList(end + 1) = MatNatSubject.createFromServerObject(object);
+                end
+            end
+        end
+        
+        
+        function sessionList = getSessionList(obj, projectName)
+            % Returns an array of MatNatSessions containing session metadata
+            
+            structFromServer = obj.request(['REST/projects/' projectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            sessionList = MatNatSession.empty;
+            
+            if ~isempty(structFromServer)
+                objectList = structFromServer.ResultSet.Result;
+                for object = objectList'
+                    sessionList(end + 1) = MatNatSession.createFromServerObject(object);
                 end
             end
         end
     end
-
+    
     methods (Access = private)
         function returnValue = request(obj, url, varargin)
-            % Performs a request call 
+            % Performs a request call
             
             if isempty(obj.sessionCookie)
                 obj.forceAuthentication;
@@ -93,6 +108,6 @@ classdef MatNat < handle
             obj.authenticatedBaseUrl = baseUrl;
         end
     end
-
+    
 end
 

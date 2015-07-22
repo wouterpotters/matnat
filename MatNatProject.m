@@ -1,4 +1,4 @@
-classdef MatNatProject < handle
+classdef MatNatProject < MatNatBase
     % MatNatProject An object representing an XNAT project
     %
     %     Licence
@@ -8,7 +8,7 @@ classdef MatNatProject < handle
     %     Distributed under the GNU GPL v3 licence. Please see website for details.
     %        
     
-    properties (SetAccess = private)
+    properties (SetAccess = protected)
         Name
         Id
         SecondaryId
@@ -16,26 +16,16 @@ classdef MatNatProject < handle
     end
     
     methods (Static)
-        function obj = createMatNatProjectFromServerObject(serverObject)
+        function obj = createFromServerObject(serverObject)
             % Creates a MatNatProject based on the project information
             % structure returned from the XNAT server
             
             obj = MatNatProject;
-            obj.setOptionalProperty(serverObject, 'Name', 'name');
-            obj.setOptionalProperty(serverObject, 'Id', 'id');
-            obj.setOptionalProperty(serverObject, 'SecondaryId', 'secondary_id');
-            obj.setOptionalProperty(serverObject, 'Description', 'description');
-        end
-        
+            obj.Name = MatNatBase.getOptionalProperty(serverObject, 'name');
+            obj.Id = MatNatBase.getOptionalProperty(serverObject, 'id');
+            obj.SecondaryId = MatNatBase.getOptionalProperty(serverObject, 'secondary_id');
+            obj.Description = MatNatBase.getOptionalProperty(serverObject, 'description');
+        end    
     end
-    
-    methods (Access = private)
-        function setOptionalProperty(obj, serverObject, propertyName, serverPropertyName)
-            if isfield(serverObject, serverPropertyName)
-                obj.(propertyName) = serverObject.(serverPropertyName);
-            end
-        end
-    end
-    
 end
 

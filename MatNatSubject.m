@@ -1,5 +1,5 @@
-classdef MatNatSession < MatNatBase
-    % MatNatSession An object representing an XNAT session
+classdef MatNatSubject < MatNatBase
+    % MatNatSubject An object representing an XNAT subject
     %
     %     Licence
     %     -------
@@ -15,13 +15,13 @@ classdef MatNatSession < MatNatBase
     
     methods (Static)
         function obj = createFromServerObject(serverObject)
-            % Creates a MatNatSession based on the information
+            % Creates a MatNatSubject based on the prosubjectject information
             % structure returned from the XNAT server
             
-            obj = MatNatSession;
+            obj = MatNatSubject;
             obj.Label = MatNatBase.getOptionalProperty(serverObject, 'label');
             obj.Id = MatNatBase.getOptionalProperty(serverObject, 'ID');
-        end
+        end  
     end
 end
 
