@@ -1,5 +1,5 @@
-classdef MatNat < handle
-    % MatNat Provides an API for communicating with an XNAT server via REST calls
+classdef MatNatRestClient < handle
+    % MatNatRestClient Provides an API for communicating with an XNAT server via REST calls
     %
     %     Licence
     %     -------
@@ -15,7 +15,7 @@ classdef MatNat < handle
     end
     
     methods
-        function obj = MatNat(config)
+        function obj = MatNatRestClient(config)
             % Creates a new MatNat object using the supplied configuraton
             
             if nargin < 1

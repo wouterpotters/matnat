@@ -13,6 +13,14 @@ classdef MatNatProject < MatNatBase
         Id
         SecondaryId
         Description
+        
+        Subjects
+    end
+    
+    methods
+        function setSubjects(obj, subjects)
+            obj.Subjects = subjects;
+        end        
     end
     
     methods (Static)

@@ -11,6 +11,23 @@ classdef MatNatSubject < MatNatBase
     properties (SetAccess = protected)
         Label
         Id
+        
+        Sessions
+        Scans
+    end
+
+     methods
+        function setSessions(obj, sessions)
+            obj.Sessions = sessions;
+        end
+        
+        function resetScans(obj)
+            obj.Scans = MatNatScan.empty;
+        end
+        
+        function addScans(obj, scans)
+            obj.Scans = horzcat(obj.Scans, scans);
+        end
     end
     
     methods (Static)

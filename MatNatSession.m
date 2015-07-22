@@ -11,6 +11,14 @@ classdef MatNatSession < MatNatBase
     properties (SetAccess = protected)
         Label
         Id
+        
+        Scans
+    end
+    
+     methods
+        function setScans(obj, scans)
+            obj.Scans = scans;
+        end        
     end
     
     methods (Static)
