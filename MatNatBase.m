@@ -10,6 +10,9 @@ classdef MatNatBase < handle
     
     methods (Static, Access = protected)
         function value = getOptionalProperty(baseObject, propertyName)
+            % Returns a value if that value exists in the provided
+            % structure, otherwise return an empty value
+            
             if isfield(baseObject, propertyName)
                 value = baseObject.(propertyName);
             else

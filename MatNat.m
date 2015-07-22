@@ -59,17 +59,30 @@ classdef MatNat < handle
             end
         end
         
-        
-        function sessionList = getSessionList(obj, projectName)
+        function sessionList = getSessionList(obj, projectName, subjectName)
             % Returns an array of MatNatSessions containing session metadata
             
-            structFromServer = obj.request(['REST/projects/' projectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            structFromServer = obj.request(['REST/projects/' projectName '/subjects/' subjectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
             sessionList = MatNatSession.empty;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 for object = objectList'
                     sessionList(end + 1) = MatNatSession.createFromServerObject(object);
+                end
+            end
+        end
+        
+        function scanList = getScanList(obj, projectName, subjectName, sessionName)
+            % Returns an array of MatNatScans containing scan metadata
+
+            structFromServer = obj.request(['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            scanList = MatNatScan.empty;
+            
+            if ~isempty(structFromServer)
+                objectList = structFromServer.ResultSet.Result;
+                for object = objectList'
+                    scanList(end + 1) = MatNatScan.createFromServerObject(object);
                 end
             end
         end
