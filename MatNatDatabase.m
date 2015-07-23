@@ -20,28 +20,17 @@ classdef MatNatDatabase < handle
             obj.RestClient = restClient;
         end
         
-        function populate(obj)
-            obj.Projects = obj.RestClient.getProjectList;
-            for project = obj.Projects
-                subjects = obj.RestClient.getSubjectList(project.Id);
-                project.setSubjects(subjects);
-                for subject = subjects
-                    sessions = obj.RestClient.getSessionList(project.Id, subject.Label);
-                    subject.setSessions(sessions);
-                    subject.resetScans;
-                    for session = sessions
-                        scans = obj.RestClient.getScanList(project.Id, subject.Label, session.Label);
-                        session.setScans(scans);
-                        subject.addScans(scans);
-                        for scan = scans
-                            disp(['   SCAN:' scan.Id ' MODALITY:' scan.Modality.Name]);
-                        end
-                    end
-                end
+        function projects = getProjects(obj)
+            if isempty(obj.Projects)
+                obj.populateProjects;
             end
-            
+            projects = obj.Projects;
         end
     end
     
+    methods (Access = private)
+        function populateProjects(obj)
+            obj.Projects = obj.RestClient.getProjectList;
+        end
+    end
 end
-

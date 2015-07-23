@@ -11,31 +11,40 @@ classdef MatNatSubject < MatNatBase
     properties (SetAccess = protected)
         Label
         Id
-        
+        ProjectId
+    end
+    
+    properties (Access = private)
+        RestClient
         Sessions
-        Scans
     end
 
-     methods
-        function setSessions(obj, sessions)
-            obj.Sessions = sessions;
+    methods
+        function obj = MatNatSubject(restClient)
+            obj.RestClient = restClient;
         end
         
-        function resetScans(obj)
-            obj.Scans = MatNatScan.empty;
-        end
-        
-        function addScans(obj, scans)
-            obj.Scans = horzcat(obj.Scans, scans);
+        function sessions = getSessions(obj)
+            if isempty(obj.Sessions)
+                obj.populateSessions;
+            end
+            sessions = obj.Sessions;
+        end        
+    end
+    
+    methods (Access = private)
+        function populateSessions(obj)
+            obj.Sessions = obj.RestClient.getSessionList(obj.ProjectId, obj.Label);
         end
     end
     
     methods (Static)
-        function obj = createFromServerObject(serverObject)
+        function obj = createFromServerObject(restClient, serverObject, projectId)
             % Creates a MatNatSubject based on the prosubjectject information
             % structure returned from the XNAT server
             
-            obj = MatNatSubject;
+            obj = MatNatSubject(restClient);
+            obj.ProjectId = projectId;
             obj.Label = MatNatBase.getOptionalProperty(serverObject, 'label');
             obj.Id = MatNatBase.getOptionalProperty(serverObject, 'ID');
         end  

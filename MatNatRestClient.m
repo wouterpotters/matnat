@@ -32,14 +32,14 @@ classdef MatNatRestClient < handle
         function projectList = getProjectList(obj)
             % Returns an array of MatNatProjects containing project metadata
             
-            structFromServer = obj.request('REST/projects', 'format', 'json', 'owner', 'true', 'member', 'true');
+            structFromServer = obj.requestJson('REST/projects', 'format', 'json', 'owner', 'true', 'member', 'true');
             projectList = MatNatProject.empty;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 
                 for object = objectList'
-                    projectList(end + 1) = MatNatProject.createFromServerObject(object);
+                    projectList(end + 1) = MatNatProject.createFromServerObject(obj, object);
                 end
             end
         end
@@ -47,14 +47,14 @@ classdef MatNatRestClient < handle
         function projectList = getSubjectList(obj, projectName)
             % Returns an array of MatNatSubjects containing subject metadata
             
-            structFromServer = obj.request(['REST/projects/' projectName '/subjects'], 'format', 'json', 'owner', 'true', 'member', 'true', 'columns', 'DEFAULT');
+            structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects'], 'format', 'json', 'owner', 'true', 'member', 'true', 'columns', 'DEFAULT');
             projectList = MatNatSubject.empty;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 
                 for object = objectList'
-                    projectList(end + 1) = MatNatSubject.createFromServerObject(object);
+                    projectList(end + 1) = MatNatSubject.createFromServerObject(obj, object, projectName);
                 end
             end
         end
@@ -62,13 +62,13 @@ classdef MatNatRestClient < handle
         function sessionList = getSessionList(obj, projectName, subjectName)
             % Returns an array of MatNatSessions containing session metadata
             
-            structFromServer = obj.request(['REST/projects/' projectName '/subjects/' subjectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects/' subjectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
             sessionList = MatNatSession.empty;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 for object = objectList'
-                    sessionList(end + 1) = MatNatSession.createFromServerObject(object);
+                    sessionList(end + 1) = MatNatSession.createFromServerObject(obj, object, projectName, subjectName);
                 end
             end
         end
@@ -76,26 +76,52 @@ classdef MatNatRestClient < handle
         function scanList = getScanList(obj, projectName, subjectName, sessionName)
             % Returns an array of MatNatScans containing scan metadata
 
-            structFromServer = obj.request(['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans'], 'format', 'json', 'owner', 'true', 'member', 'true');
             scanList = MatNatScan.empty;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 for object = objectList'
-                    scanList(end + 1) = MatNatScan.createFromServerObject(object);
+                    scanList(end + 1) = MatNatScan.createFromServerObject(obj, object, projectName, subjectName, sessionName);
                 end
             end
         end
+        
+        function resourceList = getResourceList(obj, projectName, subjectName, sessionName, scanLabel)
+            % Returns an array of MatNatScans containing scan metadata
+
+            structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans/' scanLabel '/resources'], 'format', 'json', 'owner', 'true', 'member', 'true');
+            resourceList = MatNatResource.empty;
+            
+            if ~isempty(structFromServer)
+                objectList = structFromServer.ResultSet.Result;
+                for object = objectList'
+                    resourceList(end + 1) = MatNatResource.createFromServerObject(obj, object);
+                end
+            end
+        end        
+        
+        function downloadScan(obj, fileName, projectName, subjectName, sessionName, scanName, resourceName)
+            % Returns an array of MatNatScans containing scan metadata
+
+            obj.requestAndSaveFile(fileName, ['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans/' scanName '/resources/' resourceName '/files'], 'format', 'zip');
+        end        
     end
     
     methods (Access = private)
+        function returnValue = requestJson(obj, url, varargin)
+            % Performs a request call
+            
+            returnValue = obj.request(url, varargin{:}, 'MediaType', 'application/json', 'ContentType', 'json');
+        end
+        
         function returnValue = request(obj, url, varargin)
             % Performs a request call
             
             if isempty(obj.sessionCookie)
                 obj.forceAuthentication;
             end
-            options = weboptions('RequestMethod', 'get', 'ContentType','text', 'KeyName', 'Cookie', 'KeyValue', ['JSESSIONID=' obj.sessionCookie], 'MediaType', 'application/json', 'ContentType', 'json');
+            options = weboptions('RequestMethod', 'get', 'KeyName', 'Cookie', 'KeyValue', ['JSESSIONID=' obj.sessionCookie]);
             try
                 returnValue = webread([obj.authenticatedBaseUrl url], varargin{:}, options);
             catch exception
@@ -106,6 +132,24 @@ classdef MatNatRestClient < handle
                 end
             end
         end
+        
+        function returnValue = requestAndSaveFile(obj, filePath, url, varargin)
+            % Performs a request call
+            
+            if isempty(obj.sessionCookie)
+                obj.forceAuthentication;
+            end
+            options = weboptions('RequestMethod', 'get', 'KeyName', 'Cookie', 'KeyValue', ['JSESSIONID=' obj.sessionCookie]);
+            try
+                returnValue = websave(filePath, [obj.authenticatedBaseUrl url], varargin{:}, options);
+            catch exception
+                if strcmp(exception.identifier, 'MATLAB:webservices:HTTP404StatusCodeError')
+                    returnValue = [];
+                else
+                    rethrow(exception);
+                end
+            end
+        end        
         
         function forceAuthentication(obj)
             % Forces the server to initiate a new session and issue a new
