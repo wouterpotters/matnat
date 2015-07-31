@@ -1,5 +1,5 @@
 classdef MatNatScan < MatNatBase
-    % MatNatScan An object representing an XNAT scan
+    % MatNatScan A Maplab class representing an XNAT scan
     %
     %     Licence
     %     -------
@@ -19,7 +19,7 @@ classdef MatNatScan < MatNatBase
     
     properties (Access = private)
         RestClient
-        Resources
+        ResourceList
     end
     
     methods
@@ -28,16 +28,28 @@ classdef MatNatScan < MatNatBase
         end
                 
         function resources = getResources(obj)
-            if isempty(obj.Resources)
-                obj.populateResources
+            % Returns an array of MatNatResource objects for this scan
+            
+            obj.populateResourceListIfNecessary;
+            resources = obj.ResourceList;
+        end
+        
+        function number_of_images = CountImages(obj)
+            % Returns the number of images in this scan
+            
+            obj.populateResourceListIfNecessary;
+            number_of_images = 0;
+            for resource = obj.ResourceList
+                number_of_images = number_of_images + resource.FileCount;
             end
-            resources = obj.Resources;
         end
     end
     
     methods (Access = private)
-        function populateResources(obj)
-            obj.Resources = obj.RestClient.getResourceList(obj.ProjectId, obj.SubjectLabel, obj.SessionLabel, obj.Id);
+        function populateResourceListIfNecessary(obj)
+            if isempty(obj.ResourceList)
+                obj.ResourceList = obj.RestClient.getResourceList(obj.ProjectId, obj.SubjectLabel, obj.SessionLabel, obj.Id);
+            end
         end
     end
     

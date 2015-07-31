@@ -29,60 +29,64 @@ classdef MatNatRestClient < handle
             obj.config = config;
         end
         
-        function projectList = getProjectList(obj)
-            % Returns an array of MatNatProjects containing project metadata
+        function projectMap = getProjectMap(obj)
+            % Returns a map of project IDs to MatNatProject objects containing project metadata
             
             structFromServer = obj.requestJson('REST/projects', 'format', 'json', 'owner', 'true', 'member', 'true');
-            projectList = MatNatProject.empty;
+            projectMap = containers.Map;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 
                 for object = objectList'
-                    projectList(end + 1) = MatNatProject.createFromServerObject(obj, object);
+                    newProject = MatNatProject.createFromServerObject(obj, object);
+                    projectMap(newProject.Id) = newProject;
                 end
             end
         end
         
-        function projectList = getSubjectList(obj, projectName)
-            % Returns an array of MatNatSubjects containing subject metadata
+        function subjectMap = getSubjectMap(obj, projectName)
+            % Returns a map of subject IDs to MatNatSubject objects containing subject metadata
             
             structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects'], 'format', 'json', 'owner', 'true', 'member', 'true', 'columns', 'DEFAULT');
-            projectList = MatNatSubject.empty;
+            subjectMap = containers.Map;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 
                 for object = objectList'
-                    projectList(end + 1) = MatNatSubject.createFromServerObject(obj, object, projectName);
+                    newSubject = MatNatSubject.createFromServerObject(obj, object, projectName);
+                    subjectMap(newSubject.Id) = newSubject;
                 end
             end
         end
         
-        function sessionList = getSessionList(obj, projectName, subjectName)
-            % Returns an array of MatNatSessions containing session metadata
+        function sessionMap = getSessionMap(obj, projectName, subjectName)
+            % Returns a map of session IDs to MatNatSession objects containing session metadata
             
             structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects/' subjectName '/experiments'], 'format', 'json', 'owner', 'true', 'member', 'true');
-            sessionList = MatNatSession.empty;
+            sessionMap = containers.Map;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 for object = objectList'
-                    sessionList(end + 1) = MatNatSession.createFromServerObject(obj, object, projectName, subjectName);
+                    newSession = MatNatSession.createFromServerObject(obj, object, projectName, subjectName);
+                    sessionMap(newSession.Id) = newSession;
                 end
             end
         end
         
-        function scanList = getScanList(obj, projectName, subjectName, sessionName)
-            % Returns an array of MatNatScans containing scan metadata
+        function scanMap = getScanMap(obj, projectName, subjectName, sessionName)
+            % Returns a map of scan IDs to MatNatScan objects containing scan metadata
 
             structFromServer = obj.requestJson(['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans'], 'format', 'json', 'owner', 'true', 'member', 'true');
-            scanList = MatNatScan.empty;
+            scanMap = containers.Map;
             
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 for object = objectList'
-                    scanList(end + 1) = MatNatScan.createFromServerObject(obj, object, projectName, subjectName, sessionName);
+                    newScan = MatNatScan.createFromServerObject(obj, object, projectName, subjectName, sessionName);
+                    scanMap(newScan.Id) = newScan;
                 end
             end
         end
@@ -96,16 +100,16 @@ classdef MatNatRestClient < handle
             if ~isempty(structFromServer)
                 objectList = structFromServer.ResultSet.Result;
                 for object = objectList'
-                    resourceList(end + 1) = MatNatResource.createFromServerObject(obj, object);
+                    resourceList(end + 1) = MatNatResource.createFromServerObject(obj, object, projectName, subjectName, sessionName, scanLabel);
                 end
             end
         end        
-        
-        function downloadScan(obj, fileName, projectName, subjectName, sessionName, scanName, resourceName)
-            % Returns an array of MatNatScans containing scan metadata
 
-            obj.requestAndSaveFile(fileName, ['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans/' scanName '/resources/' resourceName '/files'], 'format', 'zip');
-        end        
+        function downloadScanToZipFile(obj, zipfileName, projectName, subjectName, sessionName, scanName, resourceName)
+            % Downloads a zip file containing the scans
+
+            obj.requestAndSaveFile(zipfileName, ['REST/projects/' projectName '/subjects/' subjectName '/experiments/' sessionName '/scans/' scanName '/resources/' resourceName '/files'], 'format', 'zip');
+        end
     end
     
     methods (Access = private)
@@ -134,7 +138,7 @@ classdef MatNatRestClient < handle
         end
         
         function returnValue = requestAndSaveFile(obj, filePath, url, varargin)
-            % Performs a request call
+            % Performs a request call to obtain and save a resource
             
             if isempty(obj.sessionCookie)
                 obj.forceAuthentication;

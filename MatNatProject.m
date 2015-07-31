@@ -1,5 +1,5 @@
 classdef MatNatProject < MatNatBase
-    % MatNatProject An object representing an XNAT project
+    % MatNatProject A Matlab class representing an XNAT project
     %
     %     Licence
     %     -------
@@ -17,7 +17,7 @@ classdef MatNatProject < MatNatBase
        
     properties (Access = private)
         RestClient
-        Subjects
+        SubjectMap
     end
     
     methods
@@ -25,18 +25,54 @@ classdef MatNatProject < MatNatBase
             obj.RestClient = restClient;
         end
         
-        function subjects = getSubjects(obj)
-            if isempty(obj.Subjects)
-                obj.populateSubjects;
-            end
-            subjects = obj.Subjects;
+        function subjectMap = getSubjectMap(obj)
+            % Returns a map of subject identifiers to MatNatSubject objects
+            
+            obj.populateSubjectMapIfNecessary;
+            subjectMap = obj.SubjectMap;
         end
+        
+        function subject = getSubject(obj, patient_id)
+            % Returns the MatNatSubject object corresponding to the given
+            % subject identifier
+            
+            if isempty(patient_id)
+                subject = [];
+                return;
+            end
+            
+            obj.populateSubjectMapIfNecessary;
+            if ~obj.SubjectMap.isKey(patient_id)
+                subject = [];
+            else
+                subject = obj.SubjectMap(patient_id);
+            end
+        end
+        
+        function resource = GetResourceForSeriesUid(obj, patient_id, series_uid)
+            % Gets the first resource for the series with this identifier
+            
+            subject = obj.getSubject(patient_id);
+            if ~isempty(subject)
+                scan = subject.FindScan(series_uid);
+                if ~isempty(scan)
+                    resources = scan.getResources;
+                    if numel(resources) > 0
+                        resource = resources(1);
+                        return;
+                    end
+                end
+            end
+            resource = [];
+        end        
     end
     
     methods (Access = private)
-        function populateSubjects(obj)
-            obj.Subjects = obj.RestClient.getSubjectList(obj.Id);
-            end        
+        function populateSubjectMapIfNecessary(obj)
+            if isempty(obj.SubjectMap)
+                obj.SubjectMap = obj.RestClient.getSubjectMap(obj.Id);
+            end
+        end
     end
     
     methods (Static)

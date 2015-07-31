@@ -9,6 +9,8 @@ classdef MatNatConfiguration < handle
     %        
     
     properties (Access = private)
+        applicationDirectory
+        serverName
         baseUrl
         userName
         password
@@ -19,16 +21,28 @@ classdef MatNatConfiguration < handle
             baseUrl = obj.baseUrl;
         end
         
-        function getUserName = getUserName(obj)
-            getUserName = obj.userName;
+        function serverName = getServerName(obj)
+            serverName = obj.serverName;
+        end
+        
+        function userName = getUserName(obj)
+            userName = obj.userName;
         end
         
         function password = getPassword(obj)
             password = obj.password;
         end
         
+        function applicationDirectory = getApplicationDirectory(obj)
+            applicationDirectory = obj.applicationDirectory;
+        end
+        
         function setBaseUrl(obj, baseUrl)
             obj.baseUrl = baseUrl;
+        end
+        
+        function setServerName(obj, serverName)
+            obj.serverName = serverName;
         end
         
         function setUserName(obj, userName)
@@ -38,6 +52,10 @@ classdef MatNatConfiguration < handle
         function setPassword(obj, password)
             obj.password = password;
         end
+        
+        function setApplicationDirectory(obj, applicationDirectory)
+            obj.applicationDirectory = applicationDirectory;
+        end        
     end
 end
 

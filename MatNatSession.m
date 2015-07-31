@@ -1,5 +1,5 @@
 classdef MatNatSession < MatNatBase
-    % MatNatSession An object representing an XNAT session
+    % MatNatSession A Matlab class representing an XNAT session
     %
     %     Licence
     %     -------
@@ -17,7 +17,7 @@ classdef MatNatSession < MatNatBase
     
     properties (Access = private)
         RestClient
-        Scans
+        ScanMap
     end
     
     methods
@@ -25,17 +25,26 @@ classdef MatNatSession < MatNatBase
             obj.RestClient = restClient;
         end
         
-        function scans = getScans(obj)
-            if isempty(obj.Scans)
-                obj.populateScans;
-            end
-            scans = obj.Scans;
+        function scanMap = getScanMap(obj)
+            % Returns a map of scan IDs to MatNatScan objects
+            
+            obj.populateScanMapIfNecessary;
+            scanMap = obj.ScanMap;
+        end
+        
+        function number_of_scans = CountScans(obj)
+            % Returns the number of scans in this session
+            
+            obj.populateScanMapIfNecessary;
+            number_of_scans = obj.ScanMap.Count;
         end
     end
 
     methods (Access = private)
-        function populateScans(obj)
-            obj.Scans = obj.RestClient.getScanList(obj.ProjectId, obj.SubjectLabel, obj.Label);
+        function populateScanMapIfNecessary(obj)
+            if isempty(obj.ScanMap)
+                obj.ScanMap = obj.RestClient.getScanMap(obj.ProjectId, obj.SubjectLabel, obj.Label);
+            end
         end
     end
         

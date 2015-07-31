@@ -1,5 +1,5 @@
 classdef MatNatSubject < MatNatBase
-    % MatNatSubject An object representing an XNAT subject
+    % MatNatSubject A Matlab class representing an XNAT subject
     %
     %     Licence
     %     -------
@@ -16,7 +16,7 @@ classdef MatNatSubject < MatNatBase
     
     properties (Access = private)
         RestClient
-        Sessions
+        SessionMap
     end
 
     methods
@@ -24,17 +24,44 @@ classdef MatNatSubject < MatNatBase
             obj.RestClient = restClient;
         end
         
-        function sessions = getSessions(obj)
-            if isempty(obj.Sessions)
-                obj.populateSessions;
+        function session_map = getSessionMap(obj)
+            % Returns a map of session IDs to MatNatSession objects
+            
+            obj.populateSessionMapIfNecessary;
+            session_map = obj.SessionMap;
+        end
+        
+        function scan = FindScan(obj, scan_id)
+            % Finds a scan with the given scan id
+            
+            obj.populateSessionMapIfNecessary;
+            for session = obj.SessionMap.values
+                for scan_cell = session{1}.getScanMap.values
+                    if strcmp(scan_cell{1}.Id, scan_id)
+                        scan = scan_cell{1};
+                        return;
+                    end
+                end
             end
-            sessions = obj.Sessions;
-        end        
+            scan = [];
+        end
+        
+        function scan_count = CountScans(obj)
+            % Returns the total number of scans in all sessions for this subject 
+            
+            obj.populateSessionMapIfNecessary;
+            scan_count = 0;
+            for session = obj.sessionMap.values
+                scan_count = scan_count + session{1}.CountScans;
+            end
+        end
     end
     
     methods (Access = private)
-        function populateSessions(obj)
-            obj.Sessions = obj.RestClient.getSessionList(obj.ProjectId, obj.Label);
+        function populateSessionMapIfNecessary(obj)
+            if isempty(obj.SessionMap)
+                obj.SessionMap = obj.RestClient.getSessionMap(obj.ProjectId, obj.Label);
+            end
         end
     end
     
