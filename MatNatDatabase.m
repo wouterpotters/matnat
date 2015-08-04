@@ -49,7 +49,7 @@ classdef MatNatDatabase < handle
             if ~isempty(project)
                 resource = project.GetResourceForSeriesUid(subjectName, scanName);
                 
-                uid = PTKSystemUtilities.GenerateUid;
+                uid = CoreSystemUtilities.GenerateUid;
                 
                 zipDir = fullfile(MatNatDatabase.getTempDir, 'zipped');
                 if ~exist(zipDir, 'dir')
