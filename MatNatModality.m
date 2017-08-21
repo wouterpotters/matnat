@@ -22,6 +22,36 @@ classdef MatNatModality
 
     enumeration
         MR ('MR', 'xnat:mrScanData')
+        PET ('PET', 'xnat:petScanData')
+        CT ('CT', 'xnat:ctScanData')
+        EPS ('EPS', 'xnat:epsScanData')
+        HD ('HD', 'xnat:hdScanData')
+        ECG ('ECG', 'xnat:ecgScanData')
+        US ('US', 'xnat:usScanData')
+        IO ('IO', 'xnat:ioScanData')
+        MG ('MG', 'xnat:mgScanData')
+        DX ('DX', 'xnat:dxScanData')
+        CR ('CR', 'xnat:crScanData')
+        GMV ('GMV', 'xnat:gmvScanData')
+        GM ('GM', 'xnat:gmScanData')
+        ESV ('ESV', 'xnat:esvScanData')
+        ES ('ES', 'xnat:esScanData')
+        NM ('NM', 'xnat:nmScanData')
+        DX3DCraniofacial ('DX3DCraniofacial', 'xnat:dx3DCraniofacialScanData')
+        XA3D ('XA3D', 'xnat:xa3DScanData')
+        RF ('RF', 'xnat:rfScanData')
+        XA ('XA', 'xnat:xaScanData')
+        SM ('SM', 'xnat:smScanData')
+        XC ('XC', 'xnat:xcScanData')
+        XCV ('XCV', 'xnat:xcvScanData')
+        OP ('OP', 'xnat:opScanData')
+        OPT ('OPT', 'xnat:optScanData')
+        RTImage ('RTImage', 'xnat:rtImageScanData')
+        SC ('SC', 'xnat:scScanData')
+        Seg ('Seg', 'xnat:segScanData')
+        MRS ('MRS', 'xnat:mrsScanData')
+        VoiceAudio ('VoiceAudio', 'xnat:voiceAudioScanData')
+        OtherDicom ('OtherDicom', 'xnat:otherDicomScanData')
     end
     
     properties
@@ -32,7 +62,7 @@ classdef MatNatModality
             % Get the modality type from the Xnat type string
             
             allEnums = enumeration('MatNatModality');
-            for enum = allEnums
+            for enum = allEnums.'
                 if strcmp(xnatType, enum.XnatType)
                     modality = enum;
                     return;

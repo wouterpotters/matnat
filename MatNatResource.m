@@ -17,6 +17,7 @@ classdef MatNatResource < MatNatBase
         SubjectLabel
         SessionLabel
         ScanId
+        Category
     end
     
     properties (Access = private)
@@ -47,7 +48,8 @@ classdef MatNatResource < MatNatBase
             obj.ScanId = scanId;
             
             obj.Label = MatNatBase.getOptionalProperty(serverObject, 'label');
-            obj.FileCount = str2num(MatNatBase.getOptionalProperty(serverObject, 'file_count'));
+            obj.FileCount = str2double(MatNatBase.getOptionalProperty(serverObject, 'file_count'));
+            obj.Category = MatNatBase.getOptionalProperty(serverObject, 'category');
             obj.Format = MatNatBase.getOptionalProperty(serverObject, 'format');
         end
     end

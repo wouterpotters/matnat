@@ -15,6 +15,11 @@ classdef MatNatScan < MatNatBase
         ProjectId
         SubjectLabel
         SessionLabel
+        
+        Quality
+        Series_Description
+        Type
+        Note
     end
     
     properties (Access = private)
@@ -64,6 +69,10 @@ classdef MatNatScan < MatNatBase
             obj.SessionLabel = sessionLabel;
             obj.Id = MatNatBase.getOptionalProperty(serverObject, 'ID');
             obj.Modality = MatNatModality.getModalityFromXnatString(MatNatBase.getOptionalProperty(serverObject, 'xsiType'));
+            obj.Quality = MatNatBase.getOptionalProperty(serverObject, 'quality');
+            obj.Series_Description = MatNatBase.getOptionalProperty(serverObject, 'series_description');
+            obj.Type = MatNatBase.getOptionalProperty(serverObject, 'type');
+            obj.Note = MatNatBase.getOptionalProperty(serverObject, 'note');
         end
     end
 end

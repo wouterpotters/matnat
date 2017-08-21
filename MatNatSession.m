@@ -13,6 +13,8 @@ classdef MatNatSession < MatNatBase
         Id
         ProjectId
         SubjectLabel
+        Date
+        Type
     end
     
     properties (Access = private)
@@ -58,6 +60,8 @@ classdef MatNatSession < MatNatBase
             obj.SubjectLabel = subjectLabel;
             obj.Label = MatNatBase.getOptionalProperty(serverObject, 'label');
             obj.Id = MatNatBase.getOptionalProperty(serverObject, 'ID');
+            obj.Date = MatNatBase.getOptionalProperty(serverObject, 'date');
+            obj.Type = MatNatBase.getOptionalProperty(serverObject, 'xsiType');
         end
     end
 end

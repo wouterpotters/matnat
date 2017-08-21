@@ -12,6 +12,7 @@ classdef MatNatSubject < MatNatBase
         Label
         Id
         ProjectId
+        Properties@struct
     end
     
     properties (Access = private)
@@ -66,14 +67,18 @@ classdef MatNatSubject < MatNatBase
     end
     
     methods (Static)
-        function obj = createFromServerObject(restClient, serverObject, projectId)
+        function obj = createFromServerObject(restClient, serverObject, projectName)
             % Creates a MatNatSubject based on the prosubjectject information
             % structure returned from the XNAT server
             
             obj = MatNatSubject(restClient);
-            obj.ProjectId = projectId;
+            obj.ProjectId = projectName;
             obj.Label = MatNatBase.getOptionalProperty(serverObject, 'label');
             obj.Id = MatNatBase.getOptionalProperty(serverObject, 'ID');
+            
+            % get struct with properties
+            obj.Properties = restClient.getSubjectProperties(projectName, obj.Label);
+            
         end  
     end
 end

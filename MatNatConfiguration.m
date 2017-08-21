@@ -55,7 +55,10 @@ classdef MatNatConfiguration < handle
         
         function setApplicationDirectory(obj, applicationDirectory)
             obj.applicationDirectory = applicationDirectory;
-        end        
+        end
+        function disp(obj)
+            fprintf('MatNatRestClient \n - url:  %s\n - user: %s\n',obj.baseUrl,obj.userName);
+        end
     end
 end
 
